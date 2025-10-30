@@ -4,12 +4,13 @@ import { Heart } from 'lucide-react';
 interface HomePageProps {
   onCreateRoom: (playerName: string) => void;
   onJoinRoom: (playerName: string, roomCode: string) => void;
+  prefilledRoomCode?: string | null;
 }
 
-export function HomePage({ onCreateRoom, onJoinRoom }: HomePageProps) {
-  const [mode, setMode] = useState<'home' | 'create' | 'join'>('home');
+export function HomePage({ onCreateRoom, onJoinRoom, prefilledRoomCode }: HomePageProps) {
+  const [mode, setMode] = useState<'home' | 'create' | 'join'>(prefilledRoomCode ? 'join' : 'home');
   const [playerName, setPlayerName] = useState('');
-  const [roomCode, setRoomCode] = useState('');
+  const [roomCode, setRoomCode] = useState(prefilledRoomCode || '');
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,9 +93,10 @@ export function HomePage({ onCreateRoom, onJoinRoom }: HomePageProps) {
                   placeholder="Room Code"
                   value={roomCode}
                   onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                  className="w-full px-6 py-4 text-lg font-mono tracking-wider border-2 border-gray-200 rounded-2xl focus:border-pink-500 focus:outline-none transition-all uppercase"
+                  className="w-full px-6 py-4 text-lg font-mono tracking-wider border-2 border-gray-200 rounded-2xl focus:border-pink-500 focus:outline-none transition-all uppercase disabled:bg-gray-100"
                   maxLength={6}
                   required
+                  disabled={!!prefilledRoomCode}
                 />
               </div>
 
@@ -117,13 +119,15 @@ export function HomePage({ onCreateRoom, onJoinRoom }: HomePageProps) {
                 Join Room
               </button>
 
-              <button
-                type="button"
-                onClick={() => setMode('home')}
-                className="w-full text-gray-600 font-medium py-3 hover:text-gray-800 transition-colors"
-              >
-                Back
-              </button>
+              {!prefilledRoomCode && (
+                <button
+                  type="button"
+                  onClick={() => setMode('home')}
+                  className="w-full text-gray-600 font-medium py-3 hover:text-gray-800 transition-colors"
+                >
+                  Back
+                </button>
+              )}
             </form>
           </div>
         </div>

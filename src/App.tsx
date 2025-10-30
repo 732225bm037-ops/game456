@@ -14,12 +14,13 @@ function App() {
   const [playerName, setPlayerName] = useState<string>('');
   const [players, setPlayers] = useState<Player[]>([]);
   const [isCreator, setIsCreator] = useState(false);
+  const [sharedRoomCode, setSharedRoomCode] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roomCode = params.get('room');
     if (roomCode) {
-      checkRoomExists(roomCode);
+      setSharedRoomCode(roomCode.toUpperCase());
     }
   }, []);
 
@@ -58,17 +59,6 @@ function App() {
     }
   }, [players, gameState]);
 
-  const checkRoomExists = async (roomCode: string) => {
-    const { data } = await supabase
-      .from('rooms')
-      .select('*')
-      .eq('room_code', roomCode)
-      .maybeSingle();
-
-    if (data && data.status === 'waiting') {
-      setRoom(data);
-    }
-  };
 
   const loadPlayers = async () => {
     if (!room) return;
@@ -153,12 +143,14 @@ function App() {
 
     setRoom(existingRoom);
 
+    const playerNumber = (existingPlayers?.length || 0) + 1;
+
     const { data: newPlayer } = await supabase
       .from('players')
       .insert({
         room_id: existingRoom.id,
         name,
-        player_number: 2,
+        player_number: playerNumber,
       })
       .select()
       .single();
@@ -171,7 +163,13 @@ function App() {
   };
 
   if (gameState === 'home') {
-    return <HomePage onCreateRoom={handleCreateRoom} onJoinRoom={handleJoinRoom} />;
+    return (
+      <HomePage
+        onCreateRoom={handleCreateRoom}
+        onJoinRoom={handleJoinRoom}
+        prefilledRoomCode={sharedRoomCode}
+      />
+    );
   }
 
   if (gameState === 'waiting' && room) {
